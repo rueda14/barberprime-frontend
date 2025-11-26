@@ -1,272 +1,316 @@
-const API_BASE_URL = 'http://localhost:3000';
+// ================================
+// CONFIGURAÇÃO DA API
+// ================================
+const API_BASE_URL = "https://barberprime-backend.onrender.com"; 
+// Se a URL do backend no Render for outra, TROQUE aqui em cima.
 
-// ===============================
-// FORMULÁRIO DE AGENDAMENTO
-// (index.html)
-// ===============================
-const formAgendamento = document.getElementById('formAgendamento');
+// ================================
+// FUNÇÕES GERAIS
+// ================================
 
-if (formAgendamento) {
-    formAgendamento.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const payload = {
-            nome_cliente: formAgendamento.nome.value,
-            email: formAgendamento.email.value,
-            telefone: formAgendamento.telefone.value,
-            servico: formAgendamento.servico.value,
-            data: formAgendamento.data.value,
-            hora: formAgendamento.hora.value,
-            observacoes: formAgendamento.observacoes.value
-        };
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/agendamentos`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                alert('Erro ao agendar.');
-                return;
-            }
-
-            alert('Agendamento enviado com sucesso!');
-            formAgendamento.reset();
-        } catch (error) {
-            console.error(error);
-            alert('Erro de conexão com o servidor.');
-        }
-    });
+function formatarDataBR(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso; // se não for ISO, devolve como veio
+  return d.toLocaleDateString("pt-BR");
 }
 
+function mostrarErroPadrao(mensagemExtra) {
+  alert(mensagemExtra || "Ocorreu um erro. Tente novamente.");
+}
 
-// ===============================
-// PAINEL - LISTAR AGENDAMENTOS
-// (painel.html)
-// ===============================
-const tabelaAgendamentosBody = document.getElementById('listaAgendamentos');
+// ================================
+// PÁGINA INICIAL (index.html)
+// ================================
+function initPaginaIndex() {
+  const cardsServicos = document.querySelectorAll(".card-servico");
+  const selectedServiceText = document.getElementById("selectedServiceText");
+  const servicoSelect = document.getElementById("servicoSelect");
+  const resumoPreco = document.getElementById("resumoPreco");
+  const formAgendamento = document.getElementById("formAgendamento");
 
-async function carregarAgendamentos() {
-    // Se não estiver na página painel.html, não faz nada
-    if (!tabelaAgendamentosBody) return;
+  // Seleção de serviço clicando nos cards
+  cardsServicos.forEach(card => {
+    card.addEventListener("click", () => {
+      cardsServicos.forEach(c => c.classList.remove("selecionado"));
+      card.classList.add("selecionado");
 
-    // Mensagem temporária
-    tabelaAgendamentosBody.innerHTML = `
-        <tr>
-            <td colspan="5">Carregando agendamentos...</td>
-        </tr>
-    `;
+      const servico = card.dataset.servico;
+      const preco = card.dataset.preco;
 
-    try {
-        const resp = await fetch(`${API_BASE_URL}/agendamentos`);
+      if (selectedServiceText) {
+        selectedServiceText.textContent = `Serviço selecionado: ${servico} (R$ ${preco},00)`;
+      }
 
-        if (!resp.ok) {
-            tabelaAgendamentosBody.innerHTML = `
-                <tr>
-                    <td colspan="5">Erro ao carregar agendamentos.</td>
-                </tr>
-            `;
-            return;
-        }
+      if (servicoSelect) {
+        servicoSelect.value = servico;
+      }
 
-        const lista = await resp.json();
+      if (resumoPreco) {
+        resumoPreco.textContent = `Valor estimado: R$ ${preco},00`;
+      }
+    });
+  });
 
-        if (!lista.length) {
-            tabelaAgendamentosBody.innerHTML = `
-                <tr>
-                    <td colspan="5">Nenhum agendamento encontrado.</td>
-                </tr>
-            `;
-            return;
-        }
+  // Atualiza resumo quando escolher pelo select
+  if (servicoSelect && resumoPreco) {
+    servicoSelect.addEventListener("change", () => {
+      const option = servicoSelect.options[servicoSelect.selectedIndex];
+      const texto = option.textContent || "";
+      if (!servicoSelect.value) {
+        resumoPreco.textContent = "Selecione um serviço para ver o valor estimado.";
+        return;
+      }
+      resumoPreco.textContent = `Serviço selecionado: ${texto}`;
+    });
+  }
 
-        // Limpa a tabela para preencher com os dados reais
-        tabelaAgendamentosBody.innerHTML = '';
+  // Envio do formulário de agendamento
+  if (formAgendamento) {
+    formAgendamento.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-        lista.forEach(ag => {
-            const tr = document.createElement('tr');
+      const nome = document.getElementById("nome")?.value.trim();
+      const email = document.getElementById("email")?.value.trim();
+      const telefone = document.getElementById("telefone")?.value.trim();
+      const servico = servicoSelect?.value || "";
+      const data = document.getElementById("data")?.value;
+      const hora = document.getElementById("hora")?.value;
+      const observacoes = document.getElementById("observacoes")?.value.trim();
 
-            const tdNome = document.createElement('td');
-            tdNome.textContent = ag.nome_cliente;
+      if (!nome || !email || !servico || !data || !hora) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+      }
 
-            const tdServico = document.createElement('td');
-            tdServico.textContent = ag.servico;
-
-            // Formatando DATA
-            const tdData = document.createElement('td');
-            try {
-                const d = new Date(ag.data);
-                tdData.textContent = d.toLocaleDateString('pt-BR');
-            } catch {
-                tdData.textContent = ag.data;
-            }
-
-            // Formatando HORA
-            const tdHora = document.createElement('td');
-            try {
-                const hora = ag.hora.substring(0, 5); // pega HH:MM
-                tdHora.textContent = hora;
-            } catch {
-                tdHora.textContent = ag.hora;
-            }
-
-            const tdAcoes = document.createElement('td');
-            const btnExcluir = document.createElement('button');
-            btnExcluir.textContent = 'Excluir';
-            btnExcluir.className = 'btn-secondary';
-            btnExcluir.style.fontSize = '0.8rem';
-            btnExcluir.style.padding = '0.3rem 0.6rem';
-
-            btnExcluir.addEventListener('click', async () => {
-                if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
-
-                try {
-                    const delResp = await fetch(`${API_BASE_URL}/agendamentos/${ag.id}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!delResp.ok) {
-                        alert('Erro ao excluir agendamento.');
-                        return;
-                    }
-
-                    alert('Agendamento excluído com sucesso.');
-                    carregarAgendamentos();
-                } catch (error) {
-                    console.error('Erro ao excluir:', error);
-                    alert('Erro de conexão ao excluir agendamento.');
-                }
-            });
-
-            tdAcoes.appendChild(btnExcluir);
-
-            tr.appendChild(tdNome);
-            tr.appendChild(tdServico);
-            tr.appendChild(tdData);
-            tr.appendChild(tdHora);
-            tr.appendChild(tdAcoes);
-
-            tabelaAgendamentosBody.appendChild(tr);
+      try {
+        const resp = await fetch(`${API_BASE_URL}/agendamentos`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            nome_cliente: nome,
+            email,
+            telefone,
+            servico,
+            data,
+            hora,
+            observacoes
+          })
         });
 
-    } catch (error) {
-        console.error('Erro ao carregar agendamentos:', error);
-        tabelaAgendamentosBody.innerHTML = `
-            <tr>
-                <td colspan="5">Erro de conexão ao buscar agendamentos.</td>
-            </tr>
-        `;
-    }
-}
-
-
-// ===============================
-// PROTEÇÃO DO PAINEL (painel.html)
-// Só deixa entrar se estiver logado
-// ===============================
-if (tabelaAgendamentosBody) {
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-
-    if (!usuarioLogado) {
-        alert('Você precisa estar logado para acessar o painel.');
-        window.location.href = 'login.html';
-    } else {
-        carregarAgendamentos();
-    }
-}
-
-
-// ===============================
-// CADASTRO DE USUÁRIO (login.html)
-// usando o link "Criar conta"
-// ===============================
-const btnCadastro = document.getElementById('btnFakeCadastro');
-
-if (btnCadastro) {
-    btnCadastro.addEventListener('click', async (e) => {
-        e.preventDefault();
-
-        const nome = prompt('Digite seu nome completo:');
-        if (!nome) return;
-
-        const email = prompt('Digite seu e-mail:');
-        if (!email) return;
-
-        const senha = prompt('Crie uma senha:');
-        if (!senha) return;
-
-        try {
-            const resp = await fetch(`${API_BASE_URL}/usuarios`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, email, senha })
-            });
-
-            const dados = await resp.json();
-
-            if (!resp.ok) {
-                alert(dados.erro || 'Erro ao cadastrar usuário.');
-                return;
-            }
-
-            alert('Usuário cadastrado com sucesso! Agora faça login.');
-        } catch (error) {
-            console.error('Erro no cadastro:', error);
-            alert('Erro de conexão ao cadastrar usuário.');
+        if (!resp.ok) {
+          console.error("Erro ao criar agendamento:", await resp.text());
+          mostrarErroPadrao("Não foi possível enviar o agendamento.");
+          return;
         }
+
+        alert("Agendamento enviado com sucesso! Entraremos em contato para confirmação.");
+        formAgendamento.reset();
+        cardsServicos.forEach(c => c.classList.remove("selecionado"));
+        if (selectedServiceText) {
+          selectedServiceText.textContent = "Nenhum serviço selecionado.";
+        }
+        if (resumoPreco) {
+          resumoPreco.textContent = "Selecione um serviço para ver o valor estimado.";
+        }
+      } catch (err) {
+        console.error("Erro inesperado ao agendar:", err);
+        mostrarErroPadrao();
+      }
     });
+  }
 }
 
-
-// ===============================
+// ================================
 // LOGIN (login.html)
-// ===============================
-const formLogin = document.getElementById('formLogin');
+// ================================
+function initPaginaLogin() {
+  const formLogin = document.getElementById("formLogin");
+  const btnFakeCadastro = document.getElementById("btnFakeCadastro");
 
-if (formLogin) {
-    formLogin.addEventListener('submit', async (e) => {
-        e.preventDefault();
+  if (btnFakeCadastro) {
+    btnFakeCadastro.addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Cadastro de funcionário é realizado apenas pela administração da barbearia.");
+    });
+  }
 
-        const email = formLogin.email.value;
-        const senha = formLogin.senha.value;
+  if (formLogin) {
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email")?.value.trim();
+      const senha = document.getElementById("senha")?.value.trim();
+
+      if (!email || !senha) {
+        alert("Preencha e-mail e senha.");
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, senha })
+        });
+
+        if (!resp.ok) {
+          if (resp.status === 401) {
+            alert("Usuário ou senha inválidos.");
+          } else {
+            console.error("Erro no login:", await resp.text());
+            mostrarErroPadrao("Erro ao realizar login.");
+          }
+          return;
+        }
+
+        const dados = await resp.json();
+        // Guarda info simples no localStorage
+        localStorage.setItem("usuarioLogado", JSON.stringify(dados.usuario));
+
+        // Redireciona para o painel
+        window.location.href = "painel.html";
+      } catch (err) {
+        console.error("Erro inesperado no login:", err);
+        mostrarErroPadrao();
+      }
+    });
+  }
+}
+
+// ================================
+// PAINEL (painel.html)
+// ================================
+function initPaginaPainel() {
+  const listaAgendamentos = document.getElementById("listaAgendamentos");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  // Checa se tem "usuário logado" (bem simples, só front)
+  const usuarioStr = localStorage.getItem("usuarioLogado");
+  if (!usuarioStr) {
+    // Se não tiver, manda para login
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("usuarioLogado");
+      window.location.href = "login.html";
+    });
+  }
+
+  async function carregarAgendamentos() {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/agendamentos`);
+      if (!resp.ok) {
+        console.error("Erro ao listar agendamentos:", await resp.text());
+        mostrarErroPadrao("Erro ao buscar agendamentos.");
+        return;
+      }
+
+      const agendamentos = await resp.json();
+
+      if (!listaAgendamentos) return;
+      listaAgendamentos.innerHTML = "";
+
+      if (!agendamentos || agendamentos.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "Nenhum agendamento encontrado.";
+        tr.appendChild(td);
+        listaAgendamentos.appendChild(tr);
+        return;
+      }
+
+      agendamentos.forEach((ag) => {
+        const tr = document.createElement("tr");
+
+        const tdCliente = document.createElement("td");
+        tdCliente.textContent = ag.nome_cliente || "";
+
+        const tdServico = document.createElement("td");
+        tdServico.textContent = ag.servico || "";
+
+        const tdData = document.createElement("td");
+        tdData.textContent = ag.data || "";
+
+        const tdHora = document.createElement("td");
+        tdHora.textContent = ag.hora || "";
+
+        const tdAcoes = document.createElement("td");
+        const btnExcluir = document.createElement("button");
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.className = "btn-secondary";
+        btnExcluir.style.fontSize = "0.8rem";
+        btnExcluir.dataset.id = ag.id; // UUID do agendamento
+        tdAcoes.appendChild(btnExcluir);
+
+        tr.appendChild(tdCliente);
+        tr.appendChild(tdServico);
+        tr.appendChild(tdData);
+        tr.appendChild(tdHora);
+        tr.appendChild(tdAcoes);
+
+        listaAgendamentos.appendChild(tr);
+      });
+
+    } catch (err) {
+      console.error("Erro inesperado ao carregar agendamentos:", err);
+      mostrarErroPadrao("Erro ao carregar agendamentos.");
+    }
+  }
+
+  // Clique no botão Excluir (event delegation)
+  if (listaAgendamentos) {
+    listaAgendamentos.addEventListener("click", async (e) => {
+      const alvo = e.target;
+      if (alvo.tagName === "BUTTON" && alvo.dataset.id) {
+        const id = alvo.dataset.id;
+        const confirmar = window.confirm("Deseja realmente excluir este agendamento?");
+        if (!confirmar) return;
 
         try {
-            const resp = await fetch(`${API_BASE_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, senha })
-            });
+          const resp = await fetch(`${API_BASE_URL}/agendamentos/${id}`, {
+            method: "DELETE"
+          });
 
-            const dados = await resp.json();
+          if (!resp.ok) {
+            console.error("Erro ao deletar agendamento:", await resp.text());
+            mostrarErroPadrao("Erro ao deletar agendamento.");
+            return;
+          }
 
-            if (!resp.ok) {
-                alert(dados.erro || 'Usuário ou senha inválidos.');
-                return;
-            }
-
-            // Guarda o usuário logado no localStorage
-            localStorage.setItem('usuarioLogado', JSON.stringify(dados.usuario));
-            alert(`Bem-vindo, ${dados.usuario.nome}!`);
-            window.location.href = 'painel.html';
-        } catch (error) {
-            console.error('Erro no login:', error);
-            alert('Erro de conexão ao fazer login.');
+          // Recarrega a lista
+          await carregarAgendamentos();
+        } catch (err) {
+          console.error("Erro inesperado ao deletar agendamento:", err);
+          mostrarErroPadrao();
         }
+      }
     });
+  }
+
+  // Carrega ao abrir o painel
+  carregarAgendamentos();
 }
 
-
-// ===============================
-// LOGOUT (botão "Sair" no painel)
-// ===============================
-const logoutBtn = document.getElementById('logoutBtn');
-
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('usuarioLogado');
-        alert('Logout realizado.');
-        window.location.href = 'login.html';
-    });
-}
+// ================================
+// INICIALIZAÇÃO GLOBAL
+// ================================
+document.addEventListener("DOMContentLoaded", () => {
+  // Pela classe do body a gente sabe qual página é
+  if (document.body.classList.contains("login-body")) {
+    initPaginaLogin();
+  } else if (document.body.classList.contains("painel-body")) {
+    initPaginaPainel();
+  } else {
+    // Se não for login nem painel, assumimos que é index.html
+    initPaginaIndex();
+  }
+});
