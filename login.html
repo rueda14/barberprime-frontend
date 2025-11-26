@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - BarberPrime</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+
+    <div class="login-card">
+        <h1>Área do Funcionário</h1>
+
+        <form id="formLogin">
+            <label>E-mail</label>
+            <input type="email" id="email" required>
+
+            <label>Senha</label>
+            <input type="password" id="senha" required>
+
+            <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem;">
+                Entrar
+            </button>
+        </form>
+
+        <p class="login-info">
+            Não tem conta?
+            <a href="#" id="btnFakeCadastro">Criar conta</a>
+        </p>
+
+        <a href="index.html" class="btn-secondary" 
+           style="display:block; text-align:center; margin-top:1rem;">
+           Voltar para o site
+        </a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

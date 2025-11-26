@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel - BarberPrime</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="painel-body">
+
+    <header class="painel-header">
+        <h1>Painel da Barbearia</h1>
+
+        <div style="display:flex; gap:0.5rem;">
+            <a href="index.html" class="btn-secondary">Voltar ao site</a>
+            <button id="logoutBtn" class="btn-secondary">Sair</button>
+        </div>
+    </header>
+
+    <main class="painel-main">
+
+        <h2>Agendamentos</h2>
+
+        <table class="tabela-agendamentos">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Data</th>
+                    <th>Hora</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody id="listaAgendamentos">
+                <!-- Dados virão do back-end -->
+            </tbody>
+        </table>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

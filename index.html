@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>BarberPrime - Barbearia & Agendamentos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Fonte opcional (pode tirar se quiser deixar mais simples) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" 
+      rel="stylesheet">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container topbar-content">
+            <div class="logo">
+                <span class="logo-mark">✂️</span>
+                <span class="logo-text">BarberPrime</span>
+            </div>
+
+            <nav class="nav">
+                <a href="#servicos">Serviços</a>
+                <a href="#agendamento">Agendar</a>
+                <a href="#contato">Contato</a>
+                <a href="login.html" class="btn-outline">Área do Funcionário</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-text">
+                    <h1>Seu corte no horário certo.</h1>
+                    <p>
+                        Agende cabelo, barba e sobrancelha com praticidade.
+                        Sem fila, sem espera – apenas você e o melhor atendimento.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#agendamento" class="btn-primary">Agendar agora</a>
+                        <a href="#servicos" class="btn-secondary">Ver serviços</a>
+                    </div>
+                </div>
+
+                <div class="hero-card">
+                    <h2>Próximo horário disponível</h2>
+                    <p class="hero-slot">Hoje, às <strong>18:30</strong></p>
+                    <p class="hero-small">Faça seu agendamento em menos de 1 minuto.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVIÇOS -->
+        <section class="section" id="servicos">
+            <div class="container">
+                <h2 class="section-title">Serviços</h2>
+                <p class="section-subtitle">
+                    Escolha o serviço ideal para o seu estilo.
+                </p>
+
+                <div class="cards-grid">
+                    <article class="card-servico" data-servico="Corte de Cabelo" data-preco="40">
+                        <h3>Cabelo</h3>
+                        <p>Corte masculino na tesoura ou máquina, finalização com produto.</p>
+                        <p class="preco">R$ 40,00</p>
+                    </article>
+
+                    <article class="card-servico" data-servico="Barba" data-preco="35">
+                        <h3>Barba</h3>
+                        <p>Barba desenhada, toalha quente e cuidado completo.</p>
+                        <p class="preco">R$ 35,00</p>
+                    </article>
+
+                    <article class="card-servico" data-servico="Cabelo + Barba" data-preco="65">
+                        <h3>Cabelo + Barba</h3>
+                        <p>Combo completo para renovar o visual de uma vez.</p>
+                        <p class="preco">R$ 65,00</p>
+                    </article>
+
+                    <article class="card-servico" data-servico="Cabelo + Barba + Sobrancelha" data-preco="80">
+                        <h3>Cabelo + Barba + Sobrancelha</h3>
+                        <p>Pacote premium: cabelo, barba e sobrancelha alinhados.</p>
+                        <p class="preco">R$ 80,00</p>
+                    </article>
+                </div>
+
+                <p class="selected-service" id="selectedServiceText">
+                    Nenhum serviço selecionado.
+                </p>
+            </div>
+        </section>
+
+        <!-- AGENDAMENTO -->
+        <section class="section section-alt" id="agendamento">
+            <div class="container">
+                <h2 class="section-title">Agende seu horário</h2>
+                <p class="section-subtitle">
+                    Preencha os dados abaixo para enviar seu pedido de agendamento diretamente
+                    para o nosso sistema.
+                </p>
+
+                <form class="form" id="formAgendamento">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">Nome completo</label>
+                            <input type="text" id="nome" name="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">Telefone</label>
+                            <input type="tel" id="telefone" name="telefone" placeholder="(DDD) 99999-9999">
+                        </div>
+                        <div class="form-group">
+                            <label for="servicoSelect">Serviço</label>
+                            <select id="servicoSelect" name="servico" required>
+                                <option value="">Selecione...</option>
+                                <option value="Corte de Cabelo">Cabelo</option>
+                                <option value="Barba">Barba</option>
+                                <option value="Cabelo + Barba">Cabelo + Barba</option>
+                                <option value="Cabelo + Barba + Sobrancelha">
+                                    Cabelo + Barba + Sobrancelha
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="data">Data</label>
+                            <input type="date" id="data" name="data" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hora">Horário</label>
+                            <input type="time" id="hora" name="hora" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" name="observacoes" rows="3"
+                            placeholder="Ex: quer um corte específico, desbotado, etc."></textarea>
+                    </div>
+
+                    <div class="form-footer">
+                        <p id="resumoPreco" class="resumo-preco">
+                            Selecione um serviço para ver o valor estimado.
+                        </p>
+                        <button type="submit" class="btn-primary">
+                            Enviar pedido de agendamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- CONTATO / RODAPÉ -->
+        <section class="section" id="contato">
+            <div class="container contato-grid">
+                <div>
+                    <h2 class="section-title">Onde estamos</h2>
+                    <p>
+                        Rua dos Cortes, 123 – Centro<br>
+                        Ribeirão Preto – SP
+                    </p>
+                    <p>
+                        WhatsApp: (16) 99999-9999<br>
+                        Instagram: @barberprime
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="section-title">Horário de funcionamento</h2>
+                    <ul class="horarios">
+                        <li>Segunda a sexta: 09h às 20h</li>
+                        <li>Sábado: 09h às 18h</li>
+                        <li>Domingos e feriados: fechado</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <span>© 2025 BarberPrime - Barbearia</span>
+            <span>Projeto acadêmico de Desenvolvimento Web</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
